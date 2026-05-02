@@ -2,8 +2,10 @@ package com.example.ecommerce.util;
 
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.entity.ProductImage;
+import com.example.ecommerce.entity.User;
 import com.example.ecommerce.repository.ProductImageRepository;
 import com.example.ecommerce.repository.ProductRepository;
+import com.example.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -19,9 +21,21 @@ public class ProductSeeder implements CommandLineRunner {
 
     private final ProductRepository productRepo;
     private final ProductImageRepository imageRepo;
+    private final UserRepository userRepo;
 
     @Override
     public void run(String... args) {
+        // Seed dummy users
+        if (userRepo.count() == 0) {
+            User user1 = new User();
+            user1.setName("Alice");
+            userRepo.save(user1);
+
+            User user2 = new User();
+            user2.setName("Bob");
+            userRepo.save(user2);
+        }
+
         // RestTemplate rest = new RestTemplate();
 
         // Map res = rest.getForObject("https://dummyjson.com/products?limit=194", Map.class);
