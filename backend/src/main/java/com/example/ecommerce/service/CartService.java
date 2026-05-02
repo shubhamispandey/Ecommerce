@@ -71,4 +71,30 @@ public class CartService {
             .filter(item -> item != null)
             .collect(Collectors.toList());
     }
+
+    public CartItemResponse updateCartItemQuantity(Long cartItemId, Integer quantity) {
+        Optional<CartItem> cartItem = cartItemRepository.findById(cartItemId);
+        if (cartItem.isPresent()) {
+            CartItem item = cartItem.get();
+            item.setQuantity(quantity);
+            cartItemRepository.save(item);
+            
+            Optional<Product> product = productRepository.findById(item.getProductId());
+            if (product.isPresent()) {
+                Product p = product.get();
+                return new CartItemResponse(
+                    item.getProductId(),
+                    p.getTitle(),
+                    p.getPrice(),
+                    p.getThumbnail(),
+                    item.getQuantity()
+                );
+            }
+        }
+        return null;
+    }
+
+    public void removeCartItem(Long cartItemId) {
+        cartItemRepository.deleteById(cartItemId);
+    }
 }
