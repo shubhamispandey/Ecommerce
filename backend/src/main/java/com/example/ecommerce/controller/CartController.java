@@ -1,6 +1,6 @@
 package com.example.ecommerce.controller;
 
-import com.example.ecommerce.entity.CartItem;
+import com.example.ecommerce.dto.CartItemResponse;
 import com.example.ecommerce.service.CartService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class CartController {
     }
 
     @GetMapping
-    public List<CartItem> getCart(@RequestParam Long userId) {
+    public List<CartItemResponse> getCart(@RequestParam Long userId) {
         return cartService.getCartItems(userId);
     }
 }

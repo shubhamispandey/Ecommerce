@@ -1,14 +1,18 @@
 package com.example.ecommerce.service;
 
+import com.example.ecommerce.dto.CartItemResponse;
 import com.example.ecommerce.entity.Cart;
 import com.example.ecommerce.entity.CartItem;
+import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.repository.CartRepository;
 import com.example.ecommerce.repository.CartItemRepository;
+import com.example.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +20,7 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final ProductRepository productRepository;
 
     public Cart getOrCreateCart(Long userId) {
         Optional<Cart> cart = cartRepository.findByUserId(userId);
@@ -44,8 +49,26 @@ public class CartService {
         }
     }
 
-    public List<CartItem> getCartItems(Long userId) {
+    public List<CartItemResponse> getCartItems(Long userId) {
         Cart cart = getOrCreateCart(userId);
-        return cartItemRepository.findByCartId(cart.getId());
+        List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+        
+        return cartItems.stream()
+            .map(cartItem -> {
+                Optional<Product> product = productRepository.findById(cartItem.getProductId());
+                if (product.isPresent()) {
+                    Product p = product.get();
+                    return new CartItemResponse(
+                        cartItem.getProductId(),
+                        p.getTitle(),
+                        p.getPrice(),
+                        p.getThumbnail(),
+                        cartItem.getQuantity()
+                    );
+                }
+                return null;
+            })
+            .filter(item -> item != null)
+            .collect(Collectors.toList());
     }
 }
