@@ -1,10 +1,9 @@
 package com.example.ecommerce.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Data
@@ -22,6 +21,9 @@ public class Product {
     private Integer stock;
     private String brand;
     private String thumbnail;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<ProductImage> images;
 
     @Version
     private Integer version;

@@ -3,9 +3,10 @@ package com.example.ecommerce.service;
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -13,8 +14,9 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Page<Product> getAllProducts(int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        return productRepository.findAll(pageable);
     }
 
     public Product getProductById(Long id) {
@@ -22,7 +24,8 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
     }
 
-    public List<Product> searchProducts(String query) {
-        return productRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query);
+    public Page<Product> searchProducts(String query, int page, int limit) {
+        Pageable pageable = PageRequest.of(page, limit);
+        return productRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query, pageable);
     }
 }

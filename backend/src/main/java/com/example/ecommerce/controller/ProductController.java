@@ -1,11 +1,11 @@
 package com.example.ecommerce.controller;
 
+import com.example.ecommerce.dto.PageResponse;
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -15,8 +15,10 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public PageResponse<Product> getAllProducts(@RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "30") int limit) {
+        Page<Product> products = productService.getAllProducts(page, limit);
+        return new PageResponse<>(products.getContent(), products.getTotalElements(), page * limit, limit);
     }
 
     @GetMapping("/{id}")
@@ -25,7 +27,10 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public List<Product> searchProducts(@RequestParam("q") String query) {
-        return productService.searchProducts(query);
+    public PageResponse<Product> searchProducts(@RequestParam("q") String query,
+                                                @RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "30") int limit) {
+        Page<Product> products = productService.searchProducts(query, page, limit);
+        return new PageResponse<>(products.getContent(), products.getTotalElements(), page * limit, limit);
     }
 }
