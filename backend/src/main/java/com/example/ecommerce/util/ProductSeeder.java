@@ -26,48 +26,51 @@ public class ProductSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // Seed dummy users
-        if (userRepo.count() == 0) {
-            User user1 = new User();
-            user1.setName("Alice");
-            userRepo.save(user1);
+        // if (userRepo.count() == 0) {
+        // User user1 = new User();
+        // user1.setName("Alice");
+        // userRepo.save(user1);
 
-            User user2 = new User();
-            user2.setName("Bob");
-            userRepo.save(user2);
-        }
+        // User user2 = new User();
+        // user2.setName("Bob");
+        // userRepo.save(user2);
+        // }
 
         // RestTemplate rest = new RestTemplate();
 
-        // Map res = rest.getForObject("https://dummyjson.com/products?limit=194", Map.class);
-        // List<Map<String, Object>> products = (List<Map<String, Object>>) res.get("products");
+        // Map res = rest.getForObject("https://dummyjson.com/products?limit=194",
+        // Map.class);
+        // List<Map<String, Object>> products = (List<Map<String, Object>>)
+        // res.get("products");
 
         // for (Map<String, Object> p : products) {
 
-        //     Long id = ((Number)p.get("id")).longValue();
+        // Long id = ((Number)p.get("id")).longValue();
 
-        //     if(productRepo.existsById(id)) continue;
+        // if(productRepo.existsById(id)) continue;
 
-        //     Product product = new Product();
-        //     product.setId(id);
-        //     product.setTitle((String)p.get("title"));
-        //     product.setDescription((String)p.get("description"));
-        //     product.setCategory((String)p.get("category"));
-        //     product.setPrice(new BigDecimal(p.get("price").toString()));
-        //     product.setDiscountPercentage(new BigDecimal(p.get("discountPercentage").toString()));
-        //     product.setRating(new BigDecimal(p.get("rating").toString()));
-        //     product.setStock((Integer)p.get("stock"));
-        //     product.setBrand((String)p.get("brand"));
-        //     product.setThumbnail((String)p.get("thumbnail"));
+        // Product product = new Product();
+        // product.setId(id);
+        // product.setTitle((String)p.get("title"));
+        // product.setDescription((String)p.get("description"));
+        // product.setCategory((String)p.get("category"));
+        // product.setPrice(new BigDecimal(p.get("price").toString()));
+        // product.setDiscountPercentage(new
+        // BigDecimal(p.get("discountPercentage").toString()));
+        // product.setRating(new BigDecimal(p.get("rating").toString()));
+        // product.setStock((Integer)p.get("stock"));
+        // product.setBrand((String)p.get("brand"));
+        // product.setThumbnail((String)p.get("thumbnail"));
 
-        //     productRepo.save(product);
+        // productRepo.save(product);
 
-        //     List<String> images = (List<String>) p.get("images");
-        //     for (String img : images) {
-        //         ProductImage image = new ProductImage();
-        //         image.setProductId(id);
-        //         image.setImageUrl(img);
-        //         imageRepo.save(image);
-        //     }
+        // List<String> images = (List<String>) p.get("images");
+        // for (String img : images) {
+        // ProductImage image = new ProductImage();
+        // image.setProductId(id);
+        // image.setImageUrl(img);
+        // imageRepo.save(image);
+        // }
         // }
     }
 }
