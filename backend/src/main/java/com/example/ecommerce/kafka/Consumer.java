@@ -1,4 +1,6 @@
-package com.example.myapp.kafka;
+package com.example.ecommerce.kafka;
+
+
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;

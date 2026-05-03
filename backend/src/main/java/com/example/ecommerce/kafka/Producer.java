@@ -1,3 +1,5 @@
+package com.example.ecommerce.kafka;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
