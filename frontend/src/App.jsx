@@ -1,21 +1,26 @@
 
 import './App.css'
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import PageWrapper from './app/Page'
 import CartPage from './components/CartPage'
+import ProductDetail from './components/ProductDetail'
 
-function App() {
-  const [showCart, setShowCart] = useState(false)
+function AppRoutes() {
+  const navigate = useNavigate()
 
   return (
-    <>
-      {showCart ? (
-        <CartPage onBack={() => setShowCart(false)} />
-      ) : (
-        <PageWrapper onNavigateToCart={() => setShowCart(true)} />
-      )}
-    </>
+    <Routes>
+      <Route path="/" element={<PageWrapper onNavigateToCart={() => navigate('/cart')} />} />
+      <Route path="/cart" element={<CartPage onBack={() => navigate('/')} />} />
+      <Route path="/product-item" element={<ProductDetail />} />
+    </Routes>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  )
+}

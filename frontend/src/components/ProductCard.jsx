@@ -1,23 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Star, Plus, Minus } from "lucide-react";
 
 export default function ProductCard({ product, onAddToCart }) {
   const [quantity, setQuantity] = useState(0);
+  const navigate = useNavigate();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (event) => {
+    event?.stopPropagation();
     setQuantity(1);
     onAddToCart();
   };
 
-  const handleIncrease = () => {
+  const handleIncrease = (event) => {
+    event?.stopPropagation();
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
     onAddToCart();
   };
 
-  const handleDecrease = () => {
+  const handleDecrease = (event) => {
+    event?.stopPropagation();
     if (quantity > 1) {
       setQuantity(quantity - 1);
       onAddToCart(-1);
@@ -27,8 +32,15 @@ export default function ProductCard({ product, onAddToCart }) {
     }
   };
 
+  const handleOpenDetail = () => {
+    navigate(`/product-item?id=${product.id}`);
+  };
+
   return (
-    <div className="border rounded-xl p-4 bg-white hover:shadow-lg transition flex flex-col">
+    <div
+      onClick={handleOpenDetail}
+      className="cursor-pointer border rounded-xl p-4 bg-white hover:shadow-lg transition flex flex-col"
+    >
       
       <img
         src={product.thumbnail}
