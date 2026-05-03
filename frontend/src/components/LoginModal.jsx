@@ -42,9 +42,16 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp, onLoginS
       }
 
       const data = await response.json();
-      // Store token in localStorage
+      // Store token and user info in localStorage
       localStorage.setItem("authToken", data.token);
-      localStorage.setItem("user", JSON.stringify(data.username));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.userId,
+          username: data.username,
+          email: data.email,
+        })
+      );
 
       // Close modal and reset
       setUsername("");
@@ -56,8 +63,6 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp, onLoginS
         onLoginSuccess();
       }
 
-      // Show success message
-      alert("Login successful!");
     } catch (err) {
       setError(err.message);
     } finally {

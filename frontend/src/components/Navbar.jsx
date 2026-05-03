@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Search, ShoppingCart, User, ChevronDown, LogOut, UserCircle } from "lucide-react";
 import LoginModal from "./LoginModal";
 import SignUpModal from "./SignUpModal";
@@ -55,6 +57,22 @@ export default function Navbar({ cartCount = 0, search = "", onSearch = () => {}
       } catch (e) {
         console.error("Error parsing user data:", e);
       }
+      toast.success("Logged in successfully");
+    }
+  };
+
+  const handleSignUpSuccess = () => {
+    const token = localStorage.getItem("authToken");
+    const user = localStorage.getItem("user");
+    if (token && user) {
+      setIsLoggedIn(true);
+      try {
+        const userData = JSON.parse(user);
+        setUserData(userData);
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+      }
+      toast.success("Account created successfully");
     }
   };
 
@@ -104,7 +122,7 @@ export default function Navbar({ cartCount = 0, search = "", onSearch = () => {}
               >
                 <UserCircle size={20} />
                 <span className="hidden sm:inline">
-                  {userData.name || userData.firstName || "User"}
+                  {userData.name || userData.username || "User"}
                 </span>
                 <ChevronDown size={16} />
               </button>
@@ -119,7 +137,7 @@ export default function Navbar({ cartCount = 0, search = "", onSearch = () => {}
                       </div>
                       <div>
                         <p className="font-semibold text-gray-800">
-                          {userData || ""}
+                          {userData.name || userData.username || `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User"}
                         </p>
                         <p className="text-sm text-gray-500">{userData.email}</p>
                       </div>
@@ -128,8 +146,10 @@ export default function Navbar({ cartCount = 0, search = "", onSearch = () => {}
 
                   <div className="p-2">
                     <div className="px-2 py-2 text-sm text-gray-600 border-b border-gray-100">
-                      <p><span className="font-medium">Username:</span> {userData}</p>
-              
+                      <p><span className="font-medium">Username:</span> {userData.username}</p>
+                      {userData.id && (
+                        <p><span className="font-medium">ID:</span> {userData.id}</p>
+                      )}
                     </div>
 
                     <button
@@ -212,7 +232,20 @@ export default function Navbar({ cartCount = 0, search = "", onSearch = () => {}
           setShowSignUpModal(false);
           setShowLoginModal(true);
         }}
-        onSignUpSuccess={handleLoginSuccess}
+        onSignUpSuccess={handleSignUpSuccess}
+      />
+
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
       />
 
     </header>

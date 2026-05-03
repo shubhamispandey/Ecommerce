@@ -86,9 +86,16 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin, onSignUp
       }
 
       const data = await response.json();
-      // Store token in localStorage
+      // Store token and user info in localStorage
       localStorage.setItem("authToken", data.token);
-      localStorage.setItem("user", JSON.stringify(data.username));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.userId,
+          username: data.username,
+          email: data.email,
+        })
+      );
 
       // Reset form and close modal
       setFormData({
@@ -105,8 +112,6 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin, onSignUp
         onSignUpSuccess();
       }
 
-      // Show success message
-      alert("Account created successfully!");
     } catch (err) {
       setError(err.message);
     } finally {
