@@ -5,7 +5,7 @@ import { Trash2, ChevronLeft } from "lucide-react";
 import Navbar from "./Navbar";
 import Loader from "./Loader";
 import EmptyState from "./EmptyState";
-import { fetchCart } from "../services/api";
+
 
 export default function CartPage({ onBack }) {
   const [cartData, setCartData] = useState(null);
@@ -13,6 +13,25 @@ export default function CartPage({ onBack }) {
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          "https://super-duper-carnival-p4r9v779rjq364j7-8080.app.github.dev/products/carts"
+        );
+        if (!res.ok) throw new Error("Failed to fetch cart");
+        const data = await res.json();
+        setCartData(data);
+        setIsError(false);
+      } catch (error) {
+        console.error("Cart fetch error:", error);
+        setIsError(true);
+        setCartData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchCart();
   }, []);
 
