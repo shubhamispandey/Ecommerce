@@ -1,15 +1,60 @@
 "use client";
 
-import { useSelector } from "react-redux";
-import { Search, ShoppingCart, User, ChevronDown } from "lucide-react";
-import { selectCartCount } from "../store/cartSlice";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { Search, ShoppingCart, User, ChevronDown, LogOut } from "lucide-react";
+import { selectCartCount, loadCart, clearCart } from "../store/cartSlice";
 
 export default function Navbar({
   search = "",
   onSearch = () => {},
   onCartClick = () => {},
 }) {
+  const dispatch = useDispatch();
   const cartCount = useSelector(selectCartCount);
+  const navigate = useNavigate();
+  const [loggedInUser, setLoggedInUser] = useState(null);
+
+  useEffect(() => {
+    const updateAuthState = async () => {
+      const storedUser = localStorage.getItem("authUser");
+      setLoggedInUser(storedUser);
+
+      if (localStorage.getItem("authToken")) {
+        try {
+          await dispatch(loadCart()).unwrap();
+        } catch (error) {
+          console.warn("Unable to load cart after auth state updated", error);
+        }
+      }
+    };
+
+    updateAuthState();
+    const authListener = () => {
+      updateAuthState();
+    };
+
+    window.addEventListener("authChanged", authListener);
+    return () => window.removeEventListener("authChanged", authListener);
+  }, [dispatch]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
+    dispatch(clearCart());
+    setLoggedInUser(null);
+    window.dispatchEvent(new Event("authChanged"));
+    navigate("/");
+  };
+
+  const handleCartClick = () => {
+    if (!localStorage.getItem("authToken")) {
+      navigate("/login");
+      return;
+    }
+    onCartClick();
+  };
 
   return (
     <header className="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-50">
@@ -36,12 +81,36 @@ export default function Navbar({
 
         {/* RIGHT SIDE */}
         <div className="flex items-center gap-6 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
-          {/* LOGIN */}
-          <div className="flex items-center gap-1 cursor-pointer hover:text-blue-600 dark:hover:text-purple-400 transition">
-            <User size={18} />
-            <span className="hidden sm:inline">Login</span>
-            <ChevronDown size={14} />
-          </div>
+          {/* LOGIN OR USER */}
+          {loggedInUser ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-slate-100">
+                <User size={18} />
+                <span className="hidden sm:inline font-medium">
+                  {loggedInUser}
+                </span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-2 text-white hover:bg-red-600 transition"
+                type="button"
+              >
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          ) : (
+            <div
+              className="flex items-center gap-1 cursor-pointer hover:text-blue-600 dark:hover:text-purple-400 transition"
+              onClick={() => navigate("/login")}
+              role="button"
+              tabIndex={0}
+            >
+              <User size={18} />
+              <span className="hidden sm:inline">Login</span>
+              <ChevronDown size={14} />
+            </div>
+          )}
 
           {/* MORE */}
           <div className="hidden sm:flex items-center gap-1 cursor-pointer hover:text-blue-600 dark:hover:text-purple-400 transition">

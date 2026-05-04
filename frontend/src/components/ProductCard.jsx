@@ -4,42 +4,88 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Star, Plus, Minus } from "lucide-react";
 import {
-  addToCart,
-  updateQuantity,
-  removeFromCart,
-  selectCartQuantity,
+  optimisticAddToCart,
+  optimisticUpdateQuantity,
+  deleteCartItem,
+  selectCartItemByProductId,
 } from "../store/cartSlice";
 
 export default function ProductCard({ product }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const quantity = useSelector((state) =>
-    selectCartQuantity(state, product.id),
+  const cartItem = useSelector((state) =>
+    selectCartItemByProductId(state, product.id),
   );
+  const quantity = cartItem?.quantity ?? 0;
 
   const stock = product.stock ?? Infinity;
   const canAddMore = quantity < stock;
 
-  const handleAddToCart = (event) => {
+  const handleAddToCart = async (event) => {
     event?.stopPropagation();
+    if (!localStorage.getItem("authToken")) {
+      navigate("/login");
+      return;
+    }
     if (stock <= 0) return;
-    dispatch(addToCart({ product, quantity: 1 }));
+
+    try {
+      await dispatch(optimisticAddToCart({ product, quantity: 1 })).unwrap();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleIncrease = (event) => {
+  const handleIncrease = async (event) => {
     event?.stopPropagation();
     if (!canAddMore) return;
-    dispatch(addToCart({ product, quantity: 1 }));
+    if (!cartItem) {
+      return handleAddToCart(event);
+    }
+
+    try {
+      const cartItemId = cartItem.id ?? cartItem.productId;
+      if (!cartItemId) {
+        console.error("Missing cart item ID for update", cartItem);
+        return;
+      }
+
+      await dispatch(
+        optimisticUpdateQuantity({
+          cartItemId,
+          quantity: quantity + 1,
+          productId: product.id,
+        }),
+      ).unwrap();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleDecrease = (event) => {
+  const handleDecrease = async (event) => {
     event?.stopPropagation();
-    if (quantity > 1) {
-      dispatch(
-        updateQuantity({ productId: product.id, quantity: quantity - 1 }),
-      );
-    } else if (quantity === 1) {
-      dispatch(removeFromCart(product.id));
+    if (!cartItem) return;
+
+    try {
+      const cartItemId = cartItem.id ?? cartItem.productId;
+      if (!cartItemId) {
+        console.error("Missing cart item ID for update", cartItem);
+        return;
+      }
+
+      if (quantity > 1) {
+        await dispatch(
+          optimisticUpdateQuantity({
+            cartItemId,
+            quantity: quantity - 1,
+            productId: product.id,
+          }),
+        ).unwrap();
+      } else {
+        await dispatch(deleteCartItem({ cartItemId })).unwrap();
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 

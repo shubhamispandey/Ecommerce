@@ -52,24 +52,24 @@ public class CartService {
     public List<CartItemResponse> getCartItems(Long userId) {
         Cart cart = getOrCreateCart(userId);
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
-        
+
         return cartItems.stream()
-            .map(cartItem -> {
-                Optional<Product> product = productRepository.findById(cartItem.getProductId());
-                if (product.isPresent()) {
-                    Product p = product.get();
-                    return new CartItemResponse(
-                        cartItem.getProductId(),
-                        p.getTitle(),
-                        p.getPrice(),
-                        p.getThumbnail(),
-                        cartItem.getQuantity()
-                    );
-                }
-                return null;
-            })
-            .filter(item -> item != null)
-            .collect(Collectors.toList());
+                .map(cartItem -> {
+                    Optional<Product> product = productRepository.findById(cartItem.getProductId());
+                    if (product.isPresent()) {
+                        Product p = product.get();
+                        return new CartItemResponse(
+                                cartItem.getId(),
+                                cartItem.getProductId(),
+                                p.getTitle(),
+                                p.getPrice(),
+                                p.getThumbnail(),
+                                cartItem.getQuantity());
+                    }
+                    return null;
+                })
+                .filter(item -> item != null)
+                .collect(Collectors.toList());
     }
 
     public CartItemResponse updateCartItemQuantity(Long cartItemId, Integer quantity) {
@@ -78,17 +78,17 @@ public class CartService {
             CartItem item = cartItem.get();
             item.setQuantity(quantity);
             cartItemRepository.save(item);
-            
+
             Optional<Product> product = productRepository.findById(item.getProductId());
             if (product.isPresent()) {
                 Product p = product.get();
                 return new CartItemResponse(
-                    item.getProductId(),
-                    p.getTitle(),
-                    p.getPrice(),
-                    p.getThumbnail(),
-                    item.getQuantity()
-                );
+                        item.getId(),
+                        item.getProductId(),
+                        p.getTitle(),
+                        p.getPrice(),
+                        p.getThumbnail(),
+                        item.getQuantity());
             }
         }
         return null;

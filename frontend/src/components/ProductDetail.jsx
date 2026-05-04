@@ -16,9 +16,10 @@ import Loader from "./Loader";
 import EmptyState from "./EmptyState";
 import { fetchProductById } from "../services/api";
 import {
-  addToCart,
-  updateQuantity,
-  selectCartQuantity,
+  optimisticAddToCart,
+  optimisticUpdateQuantity,
+  optimisticDeleteItem,
+  selectCartItemByProductId,
 } from "../store/cartSlice";
 
 export default function ProductDetail() {
@@ -29,9 +30,10 @@ export default function ProductDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const cartQuantity = useSelector((state) =>
-    selectCartQuantity(state, product?.id),
+  const cartItem = useSelector((state) =>
+    selectCartItemByProductId(state, product?.id),
   );
+  const cartQuantity = cartItem?.quantity ?? 0;
 
   useEffect(() => {
     if (!productId) {
@@ -78,25 +80,77 @@ export default function ProductDetail() {
     );
   };
 
-  const increaseQuantity = () => {
+  const increaseQuantity = async () => {
     if (!product || cartQuantity >= (product.stock ?? 0)) return;
-    dispatch(addToCart({ product, quantity: 1 }));
-  };
+    if (!localStorage.getItem("authToken")) {
+      navigate("/login");
+      return;
+    }
 
-  const decreaseQuantity = () => {
-    if (!product) return;
-    if (cartQuantity <= 1) {
-      dispatch(updateQuantity({ productId: product.id, quantity: 0 }));
-    } else {
-      dispatch(
-        updateQuantity({ productId: product.id, quantity: cartQuantity - 1 }),
-      );
+    try {
+      if (!cartItem) {
+        await dispatch(optimisticAddToCart({ product, quantity: 1 })).unwrap();
+      } else {
+        const cartItemId = cartItem.id ?? cartItem.productId;
+        if (!cartItemId) {
+          console.error("Missing cart item ID in product detail", cartItem);
+          return;
+        }
+        await dispatch(
+          optimisticUpdateQuantity({
+            cartItemId,
+            quantity: cartQuantity + 1,
+            productId: product.id,
+          }),
+        ).unwrap();
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const handleAddToCart = () => {
+  const decreaseQuantity = async () => {
+    if (!product || !cartItem) return;
+    if (!localStorage.getItem("authToken")) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const cartItemId = cartItem.id ?? cartItem.productId;
+      if (!cartItemId) {
+        console.error("Missing cart item ID in product detail", cartItem);
+        return;
+      }
+
+      if (cartQuantity <= 1) {
+        await dispatch(optimisticDeleteItem({ cartItemId })).unwrap();
+      } else {
+        await dispatch(
+          optimisticUpdateQuantity({
+            cartItemId,
+            quantity: cartQuantity - 1,
+            productId: product.id,
+          }),
+        ).unwrap();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAddToCart = async () => {
     if (!product || (product.stock ?? 0) <= 0) return;
-    dispatch(addToCart({ product, quantity: 1 }));
+    if (!localStorage.getItem("authToken")) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await dispatch(optimisticAddToCart({ product, quantity: 1 })).unwrap();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
