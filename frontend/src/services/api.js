@@ -1,7 +1,10 @@
+const BASE_API_URL = "http://localhost:8080";
+const PRODUCTS_ENDPOINT = `${BASE_API_URL}/products`;
+
 export const fetchProducts = async (query = "") => {
   const url = query
-    ? `https://super-duper-carnival-p4r9v779rjq364j7-8080.app.github.dev/products/search?q=${encodeURIComponent(query)}`
-    : "https://super-duper-carnival-p4r9v779rjq364j7-8080.app.github.dev/products";
+    ? `${PRODUCTS_ENDPOINT}/search?q=${encodeURIComponent(query)}`
+    : PRODUCTS_ENDPOINT;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch products");
@@ -9,9 +12,7 @@ export const fetchProducts = async (query = "") => {
 };
 
 export const fetchProductById = async (id) => {
-  const res = await fetch(
-    `https://super-duper-carnival-p4r9v779rjq364j7-8080.app.github.dev/products/${id}`
-  );
+  const res = await fetch(`${PRODUCTS_ENDPOINT}/${id}`);
 
   if (!res.ok) throw new Error("Failed to fetch product details");
   return res.json();
