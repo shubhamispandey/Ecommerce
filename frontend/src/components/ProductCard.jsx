@@ -1,34 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Star, Plus, Minus } from "lucide-react";
+import {
+  addToCart,
+  updateQuantity,
+  removeFromCart,
+  selectCartQuantity,
+} from "../store/cartSlice";
 
-export default function ProductCard({ product, onAddToCart }) {
-  const [quantity, setQuantity] = useState(0);
+export default function ProductCard({ product }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const quantity = useSelector((state) =>
+    selectCartQuantity(state, product.id),
+  );
+
+  const stock = product.stock ?? Infinity;
+  const canAddMore = quantity < stock;
 
   const handleAddToCart = (event) => {
     event?.stopPropagation();
-    setQuantity(1);
-    onAddToCart();
+    if (stock <= 0) return;
+    dispatch(addToCart({ product, quantity: 1 }));
   };
 
   const handleIncrease = (event) => {
     event?.stopPropagation();
-    const newQuantity = quantity + 1;
-    setQuantity(newQuantity);
-    onAddToCart();
+    if (!canAddMore) return;
+    dispatch(addToCart({ product, quantity: 1 }));
   };
 
   const handleDecrease = (event) => {
     event?.stopPropagation();
     if (quantity > 1) {
-      setQuantity(quantity - 1);
-      onAddToCart(-1);
+      dispatch(
+        updateQuantity({ productId: product.id, quantity: quantity - 1 }),
+      );
     } else if (quantity === 1) {
-      setQuantity(0);
-      onAddToCart(-1);
+      dispatch(removeFromCart(product.id));
     }
   };
 
@@ -65,9 +76,10 @@ export default function ProductCard({ product, onAddToCart }) {
       {quantity === 0 ? (
         <button
           onClick={handleAddToCart}
-          className="mt-auto bg-black dark:bg-purple-600 text-white py-2 rounded-md hover:bg-gray-800 dark:hover:bg-purple-700 font-medium transition"
+          disabled={stock <= 0}
+          className="mt-auto rounded-md py-2 font-medium text-white transition disabled:cursor-not-allowed disabled:bg-gray-400 dark:disabled:bg-gray-600 bg-black dark:bg-purple-600 hover:bg-gray-800 dark:hover:bg-purple-700"
         >
-          Add to Cart
+          {stock > 0 ? "Add to Cart" : "Out of Stock"}
         </button>
       ) : (
         <div className="mt-auto flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 rounded-md p-2">
@@ -82,7 +94,8 @@ export default function ProductCard({ product, onAddToCart }) {
           </span>
           <button
             onClick={handleIncrease}
-            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+            disabled={!canAddMore}
+            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Plus size={16} />
           </button>

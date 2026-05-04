@@ -1,23 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Plus,
+  Minus,
+} from "lucide-react";
 import Navbar from "./Navbar";
 import Loader from "./Loader";
 import EmptyState from "./EmptyState";
 import { fetchProductById } from "../services/api";
+import {
+  addToCart,
+  updateQuantity,
+  selectCartQuantity,
+} from "../store/cartSlice";
 
 export default function ProductDetail() {
   const { id: productId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const cartQuantity = useSelector((state) =>
+    selectCartQuantity(state, product?.id),
+  );
 
   useEffect(() => {
     if (!productId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsError(true);
       setIsLoading(false);
       return;
@@ -43,45 +61,79 @@ export default function ProductDetail() {
 
   const handleBack = () => navigate(-1);
 
-  const images = product?.images || [product?.thumbnail];
+  const images = (product?.images?.length ? product.images : []).map((item) =>
+    typeof item === "string" ? { imageUrl: item } : item,
+  );
+  const imageList =
+    images.length > 0 ? images : [{ imageUrl: product?.thumbnail }];
+
   const previousImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? imageList.length - 1 : prev - 1,
+    );
   };
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentImageIndex((prev) =>
+      prev === imageList.length - 1 ? 0 : prev + 1,
+    );
+  };
+
+  const increaseQuantity = () => {
+    if (!product || cartQuantity >= (product.stock ?? 0)) return;
+    dispatch(addToCart({ product, quantity: 1 }));
+  };
+
+  const decreaseQuantity = () => {
+    if (!product) return;
+    if (cartQuantity <= 1) {
+      dispatch(updateQuantity({ productId: product.id, quantity: 0 }));
+    } else {
+      dispatch(
+        updateQuantity({ productId: product.id, quantity: cartQuantity - 1 }),
+      );
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!product || (product.stock ?? 0) <= 0) return;
+    dispatch(addToCart({ product, quantity: 1 }));
   };
 
   return (
     <>
-      <Navbar
-        cartCount={0}
-        search=""
-        onSearch={() => {}}
-        onCartClick={handleBack}
-      />
+      <Navbar search="" onSearch={() => {}} onCartClick={handleBack} />
 
       <div className="max-w-7xl mx-auto p-4">
-        {/* Breadcrumb */}
-        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+        {/* Breadcrumb and Back */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
-            onClick={() => navigate("/")}
-            className="hover:text-blue-600 dark:hover:text-purple-400 transition"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition"
           >
-            Products
+            <ArrowLeft size={18} />
+            Back
           </button>
-          <span>/</span>
-          <span className="text-gray-900 dark:text-gray-100">
-            {product?.category || "Product"}
-          </span>
-        </div>
 
-        <button
-          onClick={handleBack}
-          className="mb-4 inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition"
-        >
-          <ArrowLeft size={18} />
-          Back
-        </button>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <button
+              onClick={() => navigate("/")}
+              className="hover:text-blue-600 dark:hover:text-purple-400 transition"
+            >
+              Products
+            </button>
+            <span>/</span>
+            <span
+              className="hover:text-blue-600 dark:hover:text-purple-400 transition cursor-pointer"
+              onClick={() => navigate(`/product-item/${productId}`)}
+            >
+              {product?.category || "Product"}
+            </span>
+            <span>/</span>
+            <span className="text-gray-900 dark:text-gray-100">
+              {product?.title || "Details"}
+            </span>
+          </div>
+        </div>
 
         {isLoading && <Loader />}
 
@@ -182,24 +234,93 @@ export default function ProductDetail() {
                 </p>
               </div>
 
-              {/* Specs Grid */}
-              {product.specs && (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(product.specs).map(([key, value]) => (
-                    <div
-                      key={key}
-                      className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800"
-                    >
-                      <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-                        {key}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
+                <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 lg:p-6 shadow-sm">
+                  <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        Brand
                       </p>
-                      <p className="text-sm lg:text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
-                        {value}
+                      <p>{product.brand}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        Category
+                      </p>
+                      <p>{product.category}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        Stock
+                      </p>
+                      <p>{product.stock}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        Discount
+                      </p>
+                      <p>{product.discountPercentage}%</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        Rating
+                      </p>
+                      <p>
+                        {product.rating?.rate ?? "N/A"} / 5 •{" "}
+                        {product.rating?.count ?? "0"} reviews
                       </p>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
+
+                <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 lg:p-6 shadow-sm">
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Select quantity
+                    </p>
+                    <div className="mt-3 flex items-center gap-2">
+                      <button
+                        onClick={decreaseQuantity}
+                        className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                        disabled={cartQuantity === 0}
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="min-w-[48px] text-center font-semibold text-gray-900 dark:text-gray-100">
+                        {cartQuantity}
+                      </span>
+                      <button
+                        onClick={increaseQuantity}
+                        className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                        disabled={cartQuantity >= (product.stock ?? 0)}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={(product.stock ?? 0) <= 0}
+                    className="w-full rounded-full bg-black dark:bg-purple-600 text-white py-3 font-semibold hover:bg-gray-800 dark:hover:bg-purple-700 transition disabled:cursor-not-allowed disabled:bg-gray-400 dark:disabled:bg-gray-500"
+                  >
+                    {cartQuantity > 0 ? "Update Cart" : "Add to Cart"}
+                  </button>
+
+                  <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                    {product.stock > 0
+                      ? `${product.stock - cartQuantity} left in stock`
+                      : "Out of stock"}
+                  </p>
+
+                  {cartQuantity >= (product.stock ?? 0) &&
+                    product.stock > 0 && (
+                      <p className="mt-2 text-sm font-medium text-red-500">
+                        You’ve reached the maximum available stock.
+                      </p>
+                    )}
+                </div>
+              </div>
             </div>
           </div>
         )}

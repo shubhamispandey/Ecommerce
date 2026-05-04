@@ -1,8 +1,10 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { Provider } from "react-redux";
 import PageWrapper from "./app/Page";
 import CartPage from "./components/CartPage";
 import ProductDetail from "./components/ProductDetail";
+import { store } from "./store/store";
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -21,8 +23,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </Provider>
   );
 }
