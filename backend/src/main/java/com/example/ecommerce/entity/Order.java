@@ -6,9 +6,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 import java.math.BigDecimal;
-
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "orders")
 @Data
 public class Order {
 

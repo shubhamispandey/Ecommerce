@@ -1,4 +1,5 @@
-const BASE_API_URL = "http://localhost:8080";
+const BASE_API_URL =
+  "https://zany-capybara-q49vw6vjwv934477-8080.app.github.dev";
 const PRODUCTS_ENDPOINT = `${BASE_API_URL}/products`;
 
 export const fetchProducts = async (query = "") => {

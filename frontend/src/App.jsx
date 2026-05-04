@@ -1,20 +1,22 @@
-
-import './App.css'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
-import PageWrapper from './app/Page'
-import CartPage from './components/CartPage'
-import ProductDetail from './components/ProductDetail'
+import "./App.css";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import PageWrapper from "./app/Page";
+import CartPage from "./components/CartPage";
+import ProductDetail from "./components/ProductDetail";
 
 function AppRoutes() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <Routes>
-      <Route path="/" element={<PageWrapper onNavigateToCart={() => navigate('/cart')} />} />
-      <Route path="/cart" element={<CartPage onBack={() => navigate('/')} />} />
-      <Route path="/product-item" element={<ProductDetail />} />
+      <Route
+        path="/"
+        element={<PageWrapper onNavigateToCart={() => navigate("/cart")} />}
+      />
+      <Route path="/cart" element={<CartPage onBack={() => navigate("/")} />} />
+      <Route path="/product-item/:id" element={<ProductDetail />} />
     </Routes>
-  )
+  );
 }
 
 export default function App() {
@@ -22,5 +24,5 @@ export default function App() {
     <BrowserRouter>
       <AppRoutes />
     </BrowserRouter>
-  )
+  );
 }
