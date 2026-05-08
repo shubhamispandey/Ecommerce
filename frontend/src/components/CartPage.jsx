@@ -276,7 +276,6 @@ export default function CartPage({ onBack }) {
                             navigate("/login");
                             return;
                           }
-
                           try {
                             const cartItemId = item.id ?? item.productId;
                             if (!cartItemId) {
